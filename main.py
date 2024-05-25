@@ -22,7 +22,7 @@ def ALL_Window():
     # 窗口的标题显示名
     My_Window.title('魔力赏搜索')
     # 窗口的大小
-    My_Window.geometry('450x420')
+    My_Window.geometry('450x510')
     # 窗口颜色
     My_Window.config(background='#333333')
     # 得到屏幕宽度
@@ -30,7 +30,7 @@ def ALL_Window():
     # 得到屏幕高度
     sh = My_Window.winfo_screenheight()
     ww = 450
-    wh = 420
+    wh = 510
     x = (sw - ww) / 2
     y = (sh - wh) / 2
     My_Window.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
@@ -88,6 +88,21 @@ def ALL_Window():
         elif sorttype == "福袋":
             variety_item_Text = "fudai_cate_id"
         return variety_item_Text
+
+    #是否仅输出一位搜索结果
+    def one_print():
+        one_print_ = one_print_Combobox.get()
+        if one_print_ == '是':
+            one_print_Text = True
+        elif one_print_ == '否':
+            one_print_Text = False
+        return one_print_Text
+
+    def click_Forced_Termination():
+        global Forced_termination
+        Forced_termination = not Forced_termination
+
+
     def Money(money):
         itme_money=int(money)*100
         return itme_money
@@ -181,18 +196,38 @@ def ALL_Window():
                             i_want.append(item)
                             item_all.append(
                                 f"物品名：{item['c2cItemsName']}\n价格：{item['showPrice']}元\n物品链接：https://mall.bilibili.com/neul-next/index.html?page=magic-market_detail&noTitleBar=1&itemsId={item['c2cItemsId']}&from=market_index\n")
+                #设置仅输出排序第一位
+                if one_print() and len(item_all) >= 1:
+                    # 自动创建对应搜索物品
+                    item_ALL(Srarch_txt.get())
+                    # 找到物品弹窗
+                    showinfo(title='搜索结果',message='程序运行完毕\n已启用仅输出当前排序规则第一位搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
+                    # 解锁按钮
+                    Srarch_Button.state(['!disabled'])
+                    break
+
+                if Forced_termination ==True :
+                    # 自动创建对应搜索物品
+                    item_ALL(Srarch_txt.get())
+                    # 找到物品弹窗
+                    showinfo(title='搜索结果',message='程序已强行终止运行!\n输出当前全部搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
+                    # 解锁按钮
+                    Srarch_Button.state(['!disabled'])
+                    break
 
                 sleep(0.5)
 
             except Exception as e:
                 sleep(3)
 
-        # 执行创建下载地址线程池
+        # 执行搜索线程池
     def search_lock_start():
         if Srarch_txt.get() == '':
-            # 找到物品弹窗
+            # 未输入物品弹窗
             showinfo(title='error', message='请输入搜索物品')
         else:
+            global Forced_termination
+            Forced_termination = False
             # 创建一个新线程
             t = threading.Thread(target=search_lock)
             # 启动线程
@@ -255,9 +290,21 @@ def ALL_Window():
     cookie_Button = tk.Button(text='cookie设置',command=open_file)
     cookie_Button.place(x=300,y=255,width=100,height=40)
 
+    #仅输出当前排序第一位
+    one_print_Label = tk.Label(text='仅查找排序第一位',foreground='#ffffff',background='#333333')
+    one_print_Label.place(x=25,y=310,width=100,height=30,anchor='nw')
+    one_print_Combobox = ttk.Combobox()
+    one_print_Combobox.place(x=30,y=355,width=100,height=50,anchor='nw')
+    one_print_Combobox['value'] = ('是','否')
+    one_print_Combobox.current(1)
+
+    #强行终止程序运行
+    Forced_termination_Button = tk.Button(text='终止运行',command=click_Forced_Termination)
+    Forced_termination_Button.place(x=160,y=360,width=100,height=40,anchor='nw')
+
     #显示请求
     print_Label = tk.Label()
-    print_Label.place(x=30,y=330,width=370,height=60)
+    print_Label.place(x=30,y=425,width=370,height=60)
 
 
     # 窗口主程序
@@ -265,6 +312,8 @@ def ALL_Window():
 
 
 item_all = []
+#强行终止程序
+Forced_termination = False
 
 def item_ALL(item):
     # 地址
