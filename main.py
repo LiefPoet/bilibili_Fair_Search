@@ -4,6 +4,7 @@ import threading
 from time import sleep
 
 import requests
+from bs4 import BeautifulSoup
 import json
 import tkinter as tk
 from tkinter import ttk
@@ -99,8 +100,7 @@ def ALL_Window():
         return one_print_Text
 
     def click_Forced_Termination():
-        global Forced_termination
-        Forced_termination = not Forced_termination
+        pass
 
 
     def Money(money):
@@ -161,6 +161,31 @@ def ALL_Window():
                 print_txt = response.text
                 print_Label.config(justify="left", anchor="w", text=f'运行代码：\n{print_txt}\n', wraplength=370)
                 response = response.json()
+                #解析网站源码
+                soup = BeautifulSoup(print_txt, 'html.parser')
+                #查找是否拥有风控报错信息
+                Forced_termination = soup.find('div',class_ = "error-container")
+                #print('目前列表选项：',Forced_termination)
+                #自动终止程序
+                if Forced_termination != None :
+                    # 自动创建对应搜索物品
+                    item_ALL(Srarch_txt.get())
+                    # 找到物品弹窗
+                    showinfo(title='搜索结果',message='程序已自动终止运行!\n已经风控！\n输出当前全部搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
+                    # 解锁按钮
+                    Srarch_Button.state(['!disabled'])
+                    break
+                elif int(Forced_termination_Scale.get()) >= 5:
+                    # 自动创建对应搜索物品
+                    item_ALL(Srarch_txt.get())
+                    # 找到物品弹窗
+                    showinfo(title='搜索结果',message='程序已手动终止运行!\n输出当前全部搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
+                    # 解锁按钮
+                    Srarch_Button.state(['!disabled'])
+                    #滑块归位
+                    Forced_termination_Scale.set(0)
+                    break
+
                 # 拿到翻页的变量
                 nextId = response["data"]["nextId"]
                 if nextId is None:
@@ -206,16 +231,7 @@ def ALL_Window():
                     Srarch_Button.state(['!disabled'])
                     break
 
-                if Forced_termination ==True :
-                    # 自动创建对应搜索物品
-                    item_ALL(Srarch_txt.get())
-                    # 找到物品弹窗
-                    showinfo(title='搜索结果',message='程序已强行终止运行!\n输出当前全部搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
-                    # 解锁按钮
-                    Srarch_Button.state(['!disabled'])
-                    break
-
-                sleep(0.5)
+                sleep(int(Sleep_Scale.get()))
 
             except Exception as e:
                 sleep(3)
@@ -226,8 +242,6 @@ def ALL_Window():
             # 未输入物品弹窗
             showinfo(title='error', message='请输入搜索物品')
         else:
-            global Forced_termination
-            Forced_termination = False
             # 创建一个新线程
             t = threading.Thread(target=search_lock)
             # 启动线程
@@ -298,9 +312,18 @@ def ALL_Window():
     one_print_Combobox['value'] = ('是','否')
     one_print_Combobox.current(1)
 
-    #强行终止程序运行
-    Forced_termination_Button = tk.Button(text='终止运行',command=click_Forced_Termination)
-    Forced_termination_Button.place(x=160,y=360,width=100,height=40,anchor='nw')
+    #搜索程序间隔时间
+    Sleep_Label = tk.Label(text='搜索间隔时间(秒)',foreground='#ffffff',background='#333333')
+    Sleep_Label.place(x=150,y=310,width=120,height=30,anchor='nw')
+    Sleep_Scale = tk.Scale(from_=0, to=5, length=200,resolution=0.1,orient="horizontal")
+    Sleep_Scale.place(x=160,y=355,width=100,height=50,anchor='nw')
+    # 强行终止程序
+    Forced_termination_Label = tk.Label(text='手动终止程序',foreground='#ffffff',background='#333333')
+    Forced_termination_Label.place(x=290,y=310,width=120,height=30,anchor='nw')
+    Forced_termination_Scale = tk.Scale(from_=0, to=5, length=200,resolution=5,orient="horizontal",showvalue=False)
+    Forced_termination_Scale.place(x=300,y=375,width=100,height=30,anchor='nw')
+    yes_or_no_Label = tk.Label(text='否              是',foreground='#ffffff',background='#333333')
+    yes_or_no_Label.place(x=290,y=340,width=120,height=30,anchor='nw')
 
     #显示请求
     print_Label = tk.Label()
@@ -312,8 +335,7 @@ def ALL_Window():
 
 
 item_all = []
-#强行终止程序
-Forced_termination = False
+
 
 def item_ALL(item):
     # 地址
