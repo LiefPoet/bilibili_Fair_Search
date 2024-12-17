@@ -90,18 +90,18 @@ def ALL_Window():
             variety_item_Text = "fudai_cate_id"
         return variety_item_Text
 
-    #是否仅输出一位搜索结果
-    def one_print():
-        one_print_ = one_print_Combobox.get()
-        if one_print_ == '是':
-            one_print_Text = True
-        elif one_print_ == '否':
-            one_print_Text = False
-        return one_print_Text
-
-    def click_Forced_Termination():
+    '''
+        #是否仅输出一位搜索结果
+        def one_print():
+            one_print_ = one_print_Combobox.get()
+            if one_print_ == '是':
+                one_print_Text = True
+            elif one_print_ == '否':
+                one_print_Text = False
+            return one_print_Text
+            def click_Forced_Termination():
         pass
-
+    '''
 
     def Money(money):
         itme_money=int(money)*100
@@ -126,6 +126,9 @@ def ALL_Window():
         i_want = []
         # 锁定按钮
         Srarch_Button.state(['disabled'])
+        Srarch_txt.state(['disabled'])
+        Maximum_Price_txt.state(['disabled'])
+        Minimum_Price_txt.state(['disabled'])
         nextId = None
         while True:
             payload = json.dumps({
@@ -157,7 +160,7 @@ def ALL_Window():
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.0.0'
             }
             try:
-                response = requests.request("POST", url, headers=headers, data=payload)
+                response = requests.request("POST", str(Set.load_URL()), headers=headers, data=payload)
                 print_txt = response.text
                 print_Label.config(justify="left", anchor="w", text=f'运行代码：\n{print_txt}\n', wraplength=370)
                 response = response.json()
@@ -174,6 +177,9 @@ def ALL_Window():
                     showinfo(title='搜索结果',message='程序已自动终止运行!\n已经风控！\n输出当前全部搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
                     # 解锁按钮
                     Srarch_Button.state(['!disabled'])
+                    Srarch_txt.state(['!disabled'])
+                    Maximum_Price_txt.state(['!disabled'])
+                    Minimum_Price_txt.state(['!disabled'])
                     break
                 elif int(Forced_termination_Scale.get()) >= 5:
                     # 自动创建对应搜索物品
@@ -182,6 +188,9 @@ def ALL_Window():
                     showinfo(title='搜索结果',message='程序已手动终止运行!\n输出当前全部搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
                     # 解锁按钮
                     Srarch_Button.state(['!disabled'])
+                    Srarch_txt.state(['!disabled'])
+                    Maximum_Price_txt.state(['!disabled'])
+                    Minimum_Price_txt.state(['!disabled'])
                     #滑块归位
                     Forced_termination_Scale.set(0)
                     break
@@ -194,6 +203,9 @@ def ALL_Window():
                         showinfo(title='搜索结果', message='未能在规定区间找到所选物品\n请扩大搜索区间或检查搜索名称')
                         # 解锁按钮
                         Srarch_Button.state(['!disabled'])
+                        Srarch_txt.state(['!disabled'])
+                        Maximum_Price_txt.state(['!disabled'])
+                        Minimum_Price_txt.state(['!disabled'])
                         break
 
                     print("+++++++++++++++++++++")
@@ -211,6 +223,9 @@ def ALL_Window():
                     showinfo(title='搜索结果', message='程序运行完毕\n请去根目录Set文件夹中item文件夹查看搜索结果')
                     # 解锁按钮
                     Srarch_Button.state(['!disabled'])
+                    Srarch_txt.state(['!disabled'])
+                    Maximum_Price_txt.state(['!disabled'])
+                    Minimum_Price_txt.state(['!disabled'])
                     break
 
                 data = response["data"]["data"]
@@ -220,58 +235,85 @@ def ALL_Window():
                         if item not in i_want:
                             i_want.append(item)
                             item_all.append(
-                                f"物品名：{item['c2cItemsName']}\n价格：{item['showPrice']}元\n物品链接：https://mall.bilibili.com/neul-next/index.html?page=magic-market_detail&noTitleBar=1&itemsId={item['c2cItemsId']}&from=market_index\n")
-                #设置仅输出排序第一位
-                if one_print() and len(item_all) >= 1:
+                                f"物品名：{item['c2cItemsName']}\n价格：{item['showPrice']}元"
+                                f"\n物品链接：https://mall.bilibili.com/neul-next/index.html?page=magic-market_detail&noTitleBar=1&itemsId={item['c2cItemsId']}&from=market_index\n\n")
+
+                #设置输出数量
+                if len(item_all) >= int(amount_print_Scale.get()) and int(amount_print_Scale.get()) !=0:
                     # 自动创建对应搜索物品
                     item_ALL(Srarch_txt.get())
                     # 找到物品弹窗
-                    showinfo(title='搜索结果',message='程序运行完毕\n已启用仅输出当前排序规则第一位搜索结果\n请去根目录Set文件夹中item文件夹查看搜索结果')
+                    showinfo(title='搜索结果',
+                            message=f'程序运行完毕\n'
+                                    f'已启用输出数量\n'
+                                    f'当前目标值为:{amount_print_Scale.get()}\n'
+                                    f'请去根目录Set文件夹中item文件夹查看搜索结果')
                     # 解锁按钮
                     Srarch_Button.state(['!disabled'])
+                    Srarch_txt.state(['!disabled'])
+                    Maximum_Price_txt.state(['!disabled'])
+                    Minimum_Price_txt.state(['!disabled'])
                     break
 
+                #间隔时间
                 sleep(int(Sleep_Scale.get()))
 
             except Exception as e:
-                sleep(3)
+                print('主搜索程序报错信息:',e)
+                sleep(5)
 
         # 执行搜索线程池
     def search_lock_start():
         if Srarch_txt.get() == '':
             # 未输入物品弹窗
             showinfo(title='error', message='请输入搜索物品')
+        elif str(Maximum_Price_txt.get()) == '':
+            # 未输入物品弹窗
+            showinfo(title='error', message='请输入价格区间\n最大值，最小值都要填!')
+        elif str(Minimum_Price_txt.get()) == '':
+            # 未输入物品弹窗
+            showinfo(title='error', message='请输入价格区间\n最大值，最小值都要填!')
         else:
             # 创建一个新线程
             t = threading.Thread(target=search_lock)
+            t.daemon = True
             # 启动线程
             t.start()
 
-    def open_file():
-        file = frozen_dir.app_path() + "/Set/cookie.txt"
-        os.startfile(file)
+    def write_Cookie():
+        try:
+            file = frozen_dir.app_path() + "/Set/cookie.txt"
+            os.startfile(file)
+        except Exception as e:
+            showinfo(title='错误异常',message=f'{e}')
+    def write_URL():
+        try:
+            file = frozen_dir.app_path() + "/Set/链接地址.txt"
+            os.startfile(file)
+        except Exception as e:
+            showinfo(title='错误异常',message=f'{e}')
 
     # 搜索区
     Srarch_Label = tk.Label(text='搜索：', foreground='#ffffff', background='#333333')
     Srarch_Label.place(x=30, y=25, width=45, height=50, anchor='nw')
     # 搜索输入框
-    Srarch_txt = tk.Entry()
+    Srarch_txt = ttk.Entry()
     Srarch_txt.place(x=90, y=25, width=200, height=50, anchor='nw')
     # 搜索按钮
     Srarch_Button = ttk.Button(text='点击搜索', command=search_lock_start)
     Srarch_Button.place(x=310, y=30, width=100, height=40, anchor='nw')
 
     #价格区
-    Maximum_Price_Label =tk.Label(text='物品最大价格',foreground='#ffffff',background='#333333')
+    Maximum_Price_Label = tk.Label(text='物品最大价格',foreground='#ffffff',background='#333333')
     Maximum_Price_Label.place(x=40,y=100,width=75,height=30,anchor='nw')
     #最大价格输入框
-    Maximum_Price_txt = tk.Entry()
+    Maximum_Price_txt = ttk.Entry()
     Maximum_Price_txt.place(x=30,y=140,width=100,height=50,anchor='nw')
     #########
     Minimum_Price_Label =tk.Label(text='物品最小价格',foreground='#ffffff',background='#333333')
     Minimum_Price_Label.place(x=175,y=100,width=75,height=30,anchor='nw')
     #最小价格输入框
-    Minimum_Price_txt = tk.Entry()
+    Minimum_Price_txt = ttk.Entry()
     Minimum_Price_txt.place(x=165,y=140,width=100,height=50,anchor='nw')
     ############
     #打折
@@ -301,16 +343,17 @@ def ALL_Window():
     variety_item_Combobox.current(0)
     #########
     #cookie设置
-    cookie_Button = tk.Button(text='cookie设置',command=open_file)
+    cookie_Button = tk.Button(text='cookie设置',command=write_Cookie)
     cookie_Button.place(x=300,y=255,width=100,height=40)
+    #链接设置
+    URL_Button = tk.Button(text='链接地址',command=write_URL)
+    URL_Button.place(x=300,y=205,width=100,height=40)
 
-    #仅输出当前排序第一位
-    one_print_Label = tk.Label(text='仅查找排序第一位',foreground='#ffffff',background='#333333')
-    one_print_Label.place(x=25,y=310,width=100,height=30,anchor='nw')
-    one_print_Combobox = ttk.Combobox()
-    one_print_Combobox.place(x=30,y=355,width=100,height=50,anchor='nw')
-    one_print_Combobox['value'] = ('是','否')
-    one_print_Combobox.current(1)
+    #输出数量
+    amount_print_Label = tk.Label(text='搜索多少个\n0为不限制',foreground='#ffffff',background='#333333')
+    amount_print_Label.place(x=25,y=310,width=100,height=30,anchor='nw')
+    amount_print_Scale = tk.Scale(from_=0, to=20, length=200, resolution=1, orient="horizontal")
+    amount_print_Scale.place(x=30, y=355, width=100, height=50, anchor='nw')
 
     #搜索程序间隔时间
     Sleep_Label = tk.Label(text='搜索间隔时间(秒)',foreground='#ffffff',background='#333333')
@@ -346,6 +389,8 @@ def item_ALL(item):
     file = open(file_site, mode='w', encoding='utf-8')
     file.writelines(item_all)
     file.close()
+    # 清除
+    item_all.clear()
 
 # 本地根目录创建文件夹
 def file_folder(text):

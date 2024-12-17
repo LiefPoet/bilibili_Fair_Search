@@ -11,3 +11,10 @@ def load_cookie():
     file_txt = file.read()
     file.close()
     return file_txt
+
+
+def load_URL():
+    file = open(frozen_dir.app_path() + '/Set/链接地址.txt', mode='r', encoding='utf-8')
+    URL_txt = file.read()
+    file.close()
+    return URL_txt
