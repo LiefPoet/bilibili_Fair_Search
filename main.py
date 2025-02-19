@@ -53,7 +53,7 @@ def ALL_Window():
         # 当改变值时 执行
         discountBox_txt = discount_Combobox.get()
         if discountBox_txt == "默认不选择":
-            discount_Text = ''
+            discount_Text = 'null'
         elif discountBox_txt == "3折以下":
             discount_Text = "0-30"
         elif discountBox_txt == "3-5折":
@@ -131,17 +131,27 @@ def ALL_Window():
         Minimum_Price_txt.state(['disabled'])
         nextId = None
         while True:
-            payload = json.dumps({
-                "categoryFilter": str(variety_item()),
-                "priceFilters": [
-                    str(Money(Minimum_Price_txt.get())) + "-" + str(Money(Maximum_Price_txt.get()))
-                ],
-                "discountFilters": [
-                    str(iscount_Combobox_Get())
-                ],
-                "nextId": nextId,
-                "sortType": str(SortType())
-            })
+            if iscount_Combobox_Get() != 'null':
+                payload = json.dumps({
+                    "categoryFilter": str(variety_item()),
+                    "priceFilters": [
+                        str(Money(Minimum_Price_txt.get())) + "-" + str(Money(Maximum_Price_txt.get()))
+                    ],
+                    "discountFilters": [
+                         str(iscount_Combobox_Get())
+                    ],
+                    "nextId": nextId,
+                    "sortType": str(SortType())
+                })
+            else:
+                payload = json.dumps({
+                    "categoryFilter": str(variety_item()),
+                    "priceFilters": [
+                        str(Money(Minimum_Price_txt.get())) + "-" + str(Money(Maximum_Price_txt.get()))
+                    ],
+                    "nextId": nextId,
+                    "sortType": str(SortType())
+                })
 
             headers = {
                 'authority': 'mall.bilibili.com',
@@ -381,27 +391,32 @@ item_all = []
 
 
 def item_ALL(item):
-    # 地址
-    file_site = frozen_dir.app_path() + f'/Set/item/{item}.txt'
-    # 创建文件
-    file_folder(item)
-    # 写入
-    file = open(file_site, mode='w', encoding='utf-8')
-    file.writelines(item_all)
-    file.close()
-    # 清除
-    item_all.clear()
+    try:
+        # 地址
+        file_site = frozen_dir.app_path() + f'/Set/item/{item}.txt'
+        # 创建文件
+        file_folder(item)
+        # 写入
+        file = open(file_site, mode='w', encoding='utf-8')
+        file.writelines(item_all)
+        file.close()
+        # 清除
+        item_all.clear()
+    except Exception as e:
+        showinfo(title='错误异常', message=f'{e}')
 
 # 本地根目录创建文件夹
 def file_folder(text):
-
-    save_path = frozen_dir.app_path() + fr"/Set/item/"
-    if os.path.exists(save_path + f'{text}.txt'):
-        print(f'文件{save_path}存在')
-    else:
-        # 创建一个txt文件并写入内容
-        file = open(save_path + f"{text}.txt", "w")
-        file.close()
+    try:
+        save_path = frozen_dir.app_path() + fr"/Set/item/"
+        if os.path.exists(save_path + f'{text}.txt'):
+            print(f'文件{save_path}存在')
+        else:
+            # 创建一个txt文件并写入内容
+            file = open(save_path + f"{text}.txt", "w")
+            file.close()
+    except Exception as e:
+        showinfo(title='错误异常', message=f'{e}')
 
 
 #程序主入口
